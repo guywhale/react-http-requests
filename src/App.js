@@ -5,8 +5,11 @@ import './App.css';
 
 function App() {
 	const [movies, setMovies] = useState([]);
+	const [isLoading, setIsLoading] = useState(false);
 
 	async function fetchMoviesHandler() {
+		setIsLoading(true);
+
 		/**
 		 * Alternative syntax to chaining .then()
 		 */
@@ -23,6 +26,8 @@ function App() {
 		});
 
 		setMovies(transformedMovies);
+
+		setIsLoading(false);
 
 		/**
 		 * Chaining .then() syntax
@@ -51,7 +56,8 @@ function App() {
 				<button onClick={fetchMoviesHandler}>Fetch Movies</button>
 			</section>
 			<section>
-				<MoviesList movies={movies} />
+				{!isLoading && <MoviesList movies={movies} />}
+				{isLoading && <p>Loading...</p>}
 			</section>
 		</React.Fragment>
 	);
