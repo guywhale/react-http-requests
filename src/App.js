@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import MoviesList from './components/MoviesList';
 import './App.css';
@@ -8,7 +8,14 @@ function App() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState(null);
 
-	async function fetchMoviesHandler() {
+	/**
+	 * Wrapped in useCallback() hook to ensure the function object pointer
+	 * remains the same when the component re-renders and only triggers the
+	 * useEffect() hooks when it itself changes.
+	 *
+	 * See useEffect() below.
+	 */
+	const fetchMoviesHandler = useCallback(async () => {
 		setIsLoading(true);
 		// Set to null to ensure any previous errors are cleared.
 		setError(null);
@@ -51,27 +58,20 @@ function App() {
 			setError(error.message);
 		}
 		setIsLoading(false);
+	}, []);
 
-		/**
-		 * Chaining .then() syntax
-		 */
-		// fetch('https://swapi.dev/api/films/')
-		// 	.then((response) => {
-		// 		return response.json();
-		// 	})
-		// 	.then((data) => {
-		// 		const transformedMovies = data.results.map((movie) => {
-		// 			return {
-		// 				id: movie.episode_id,
-		// 				title: movie.title,
-		// 				openingText: movie.opening_crawl,
-		// 				releaseDate: movie.release_date,
-		// 			};
-		// 		});
-
-		// 		setMovies(transformedMovies);
-		// 	});
-	}
+	/**
+	 * Adding a useEffect() hook ensures the API fetch is made when the component
+	 * is loaded and when the fetchMoviesHandler() changes, not just when the
+	 * button is clicked.
+	 *
+	 * As fetchMoviesHandler() is a function, and therefore an object, we have to
+	 * wrap it in a useCallback() hook to ensure the original object is kept in the
+	 * memory and a new pointer is created each time the component re-renders.
+	 */
+	useEffect(() => {
+		fetchMoviesHandler();
+	}, [fetchMoviesHandler]);
 
 	let content = <p>No movies found.</p>;
 
