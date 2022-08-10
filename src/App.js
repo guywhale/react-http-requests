@@ -28,7 +28,13 @@ function App() {
 			/**
 			 * Alternative syntax to chaining .then()
 			 */
-			const response = await fetch('https://swapi.dev/api/films/');
+			// const response = await fetch('https://swapi.dev/api/films/');
+			/**
+			 * Switch to Firebase backend app URL:
+			 */
+			const response = await fetch(
+				'https://react-http-requests-b9d38-default-rtdb.europe-west1.firebasedatabase.app/movies.json'
+			);
 
 			/**
 			 * If the response from fetch is not OK, throw an Error and stop
@@ -40,16 +46,29 @@ function App() {
 
 			const data = await response.json();
 
-			const transformedMovies = data.results.map((movie) => {
-				return {
-					id: movie.episode_id,
-					title: movie.title,
-					openingText: movie.opening_crawl,
-					releaseDate: movie.release_date,
-				};
-			});
+			const loadedMovies = [];
 
-			setMovies(transformedMovies);
+			for (const key in data) {
+				loadedMovies.push({
+					id: key,
+					title: data[key].title,
+					openingText: data[key].openingText,
+					releaseDate: data[key].releaseDate,
+				});
+			}
+
+			setMovies(loadedMovies);
+
+			// const transformedMovies = data.results.map((movie) => {
+			// 	return {
+			// 		id: movie.episode_id,
+			// 		title: movie.title,
+			// 		openingText: movie.opening_crawl,
+			// 		releaseDate: movie.release_date,
+			// 	};
+			// });
+
+			// setMovies(transformedMovies);
 		} catch (error) {
 			/**
 			 * When try fails due to response.ok check on line 29 failing,
@@ -74,8 +93,32 @@ function App() {
 		fetchMoviesHandler();
 	}, [fetchMoviesHandler]);
 
-	function addMovieHandler(movie) {
-		console.log(movie);
+	async function addMovieHandler(movie) {
+		/**
+		 * Set up POST request to send data to Firebase database. POST doesn't always
+		 * create/update database automatically but usually does, depends on backend
+		 * app configuration.
+		 *
+		 * Body contains the data object transformed from a Javscript object into JSON.
+		 *
+		 * Headers should contain 'Content-Type: application/json' to specify data type.
+		 * Not always necessary but often is.
+		 */
+		const response = await fetch(
+			'https://react-http-requests-b9d38-default-rtdb.europe-west1.firebasedatabase.app/movies.json',
+			{
+				method: 'POST',
+				body: JSON.stringify(movie),
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}
+		);
+
+		/**
+		 * Firebase responds in JSON.
+		 */
+		const data = await response.json();
 	}
 
 	let content = <p>No movies found.</p>;
